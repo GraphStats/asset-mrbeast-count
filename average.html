@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MrBeast Average Growth</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/odometer.js/0.4.8/themes/odometer-theme-default.min.css" />
+  <style>
+    body {
+      font-family: 'Roboto Black', sans-serif;
+      background: transparent;
+      color: white;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      height: 100vh;
+      gap: 20px;
+      padding: 20px;
+    }
+    .stats {
+      font-family: 'Roboto Black', sans-serif !important;
+      font-size: 1.5em;
+    }
+    .odometer {
+      font-family: 'Roboto Black', sans-serif !important;
+      font-weight: bold;
+      font-size: 1.5em;
+      margin: 0 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stats">
+    <span>1m:</span><span id="avg1m" class="odometer">0</span> /
+    <span>1h:</span><span id="avg1h" class="odometer">0</span> /
+    <span>24h:</span><span id="avg24h" class="odometer">0</span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/odometer.js/0.4.8/odometer.min.js"></script>
+  <script>
+    const API_URL = "https://backend.mixerno.space/api/youtube/estv3/UCX6OQ3DkcsbYNE6H8uQQuVA";
+
+    async function fetchData() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        const currentCount = Number(data.items[0].statistics.subscriberCount);
+        const currentTime = Date.now();
+
+        if (!currentCount || isNaN(currentCount)) return;
+
+        if (window.lastSubCount !== undefined && window.lastFetch !== undefined) {
+          const timeDiff = (currentTime - window.lastFetch) / 1000;
+          if (timeDiff > 0) {
+            const gain = currentCount - window.lastSubCount;
+            const perSecond = gain / timeDiff;
+            updateAverages(perSecond);
+          }
+        }
+
+        window.lastSubCount = currentCount;
+        window.lastFetch = currentTime;
+      } catch (e) {
+        console.error("Erreur lors de la récupération des données :", e);
+      }
+    }
+
+    function updateAverages(perSecond) {
+      document.getElementById("avg1m").innerHTML = Math.round(perSecond * 60);
+      document.getElementById("avg1h").innerHTML = Math.round(perSecond * 3600);
+      document.getElementById("avg24h").innerHTML = Math.round(perSecond * 86400);
+    }
+
+    fetchData();
+    setInterval(fetchData, 2000);
+  </script>
+</body>
+</html>

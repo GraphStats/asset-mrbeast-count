@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sub Count Progress Bar</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #0f0f0f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .title {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .progress-container {
+      width: 100%;
+      max-width: 1920px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: rgb(0, 195, 255);
+      width: 0%;
+      transition: width 0.3s ease-out;
+    }
+
+    .progress-text {
+      margin-top: 10px;
+      font-size: 1.2em;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="progress-text" id="progress-text">Loading...</div>
+
+  <script>
+    async function updateProgress() {
+      try {
+        const response = await fetch('https://backend.mixerno.space/api/youtube/estv3/UCX6OQ3DkcsbYNE6H8uQQuVA');
+        const data = await response.json();
+        const subs = data.items[0].statistics.subscriberCount;
+
+        // Calcul palier actuel
+        const floor = Math.floor(subs / 100000) * 100000;
+        const next = floor + 100000;
+        const progress = ((subs - floor) / 100000) * 100;
+
+        // MAJ barre
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent = `${subs.toLocaleString()} / ${next.toLocaleString()} subscribers`;
+      } catch (e) {
+        document.getElementById('progress-text').textContent = "Erreur lors du chargement...";
+        console.error(e);
+      }
+    }
+
+    // Mise à jour toutes les 5 secondes
+    updateProgress();
+    setInterval(updateProgress, 2000);
+  </script>
+</body>
+</html>
